@@ -6,12 +6,6 @@ vim.opt.rtp:append(path)
 require('plugins').setup()
 
 --
-vim.keymap.set('n', '<leader>sar', '>>', { desc = 'Indent' })
-vim.keymap.set('n', '<leader>saa', '<<', { desc = 'Dedent' })
--- the insert mode
---
-vim.keymap.set('i', '<leader>sar', '<C-a>r', { desc = 'Indent' })
-vim.keymap.set('i', '<leader>saa', '<C-a>s', { desc = 'Dedent' })
 --[[
    NOTE: Look for lines like this
 
