@@ -66,11 +66,11 @@ local telescopeOptions = {
       },
     }
 
+    local builtin = require 'telescope.builtin'
     -- Enable Telescope extensions if they are installed
     pcall(require('telescope').load_extension, 'fzf')
     pcall(require('telescope').load_extension, 'ui-select')
     -- Setup the keymaps
-    local builtiin = require 'telescope.builtin'
     require('keymaps.init').setup()
     local function add_newline_not_insert()
       vim.api.nvim_feedkeys('o', 'n', false)

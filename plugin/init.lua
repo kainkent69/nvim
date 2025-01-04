@@ -4,6 +4,17 @@
 local M = {}
 
 M.setup = function()
+  vim.opt.expandtab = true
+  -- Set shiftwidth and tabstop to 2 spaces
+  vim.opt.shiftwidth = 2
+  vim.opt.tabstop = 2
+
+  -- Enable auto indentation
+  vim.opt.autoindent = true
+
+  -- Enable C-style indentation (optional)
+  vim.opt.cindent = true
+
   -- something
   local function add_newline_not_insert()
     vim.api.nvim_feedkeys('o<escape>', 'n', false)
