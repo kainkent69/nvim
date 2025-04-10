@@ -4,19 +4,6 @@ M.setup = function()
   -- moving one line --
   -- local
   local map = vim.api.nvim_set_keymap
-  local vimmap = vim.keymap
-
-  vimmap.set('n', '<leader>g1', function()
-    vim.api.nvim_feedkeys(':tabn 1', 'n', false)
-  end, { desc = 'goto tab 1' })
-
-  vimmap.set('n', '<leader>g2', function()
-    vim.api.nvim_feedkeys(':tabn 2', 'n', false)
-  end, { desc = 'goto tab 2' })
-
-  vimmap.set('n', '<leader>g3', function()
-    vim.api.nvim_feedkeys(':tabn 2', 'n', false)
-  end, { desc = 'goto tab 3' })
 
   -- cursor and other things
   helpers.getModes('nivx', {
@@ -29,9 +16,14 @@ M.setup = function()
       map(mode, '<C-a>', '<Esc>ggGVgg$', { desc = 'select all' })
     end,
   })
-
   -- users options
-
   require('custom.plugins.userOptions').setup()
+  -- for godot
+  local set = false
+  local projectFile = vim.fn.getcwd() .. 'project-godot'
+  if projectFile and set then
+    vim.fn.serverstart './godohost'
+  end
 end
+
 return M

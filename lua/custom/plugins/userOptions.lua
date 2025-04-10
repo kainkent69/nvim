@@ -43,7 +43,7 @@ M.setup = function()
       return
     end
 
-    function test(b)
+    local function test(b)
       if b == true then
         return 'true'
       end
@@ -114,5 +114,18 @@ M.setup = function()
     vim.notify('flags ' .. vim.inspect(flags) .. ' ', level)
     vim.notify('values ' .. vim.inspect(values), level)
   end, { nargs = '*' })
+
+  -- Indenting
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'go', -- Replace with another filetype
+    callback = function()
+      vim.opt_local.expandtab = false -- Use tabs
+      vim.opt_local.shiftwidth = 4
+      vim.opt_local.tabstop = 4
+      vim.opt_local.softtabstop = 4
+      vim.opt_local.autoindent = true
+    end,
+  })
 end
+
 return M

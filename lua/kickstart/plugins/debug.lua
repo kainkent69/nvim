@@ -13,16 +13,15 @@ return {
   dependencies = {
     -- Creates a beautiful debugger UI
     'rcarriga/nvim-dap-ui',
-
     -- Required dependency for nvim-dap-ui
     'nvim-neotest/nvim-nio',
 
     -- Installs the debug adapters for you
     'williamboman/mason.nvim',
     'jay-babu/mason-nvim-dap.nvim',
-
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'julianolf/nvim-dap-lldb',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -81,29 +80,93 @@ return {
     local dap = require 'dap'
     local dapui = require 'dapui'
 
-    require('mason-nvim-dap').setup {
-      -- Makes a best effort to setup the various debuggers with
-      -- reasonable debug configurations
-      automatic_installation = true,
-
-      -- You can provide additional configuration to the handlers,
-      -- see mason-nvim-dap README for more information
-      handlers = {},
-
-      -- You'll need to check that you have the required things installed
-      -- online, please don't ask me how to install them :)
-      ensure_installed = {
-        -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
+    local cfg = {
+      configurations = {
+        -- C lang configurations (you can adjust this as needed)
+        c = {
+          {
+            name = 'Launch GDB',
+            type = 'gdb', -- Use 'gdb' as the type
+            request = 'launch',
+            cwd = '${workspaceFolder}',
+            program = function()
+              return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+            end,
+            args = {},
+            MIMode = 'gdb', -- Specify the MI mode for GDB
+            setupCommands = {
+              {
+                text = '-enable-pretty-printing',
+                description = 'Enable pretty printing of gdb objects',
+                ignoreFailures = true,
+              },
+            },
+          },
+          {
+            name = 'Attach to GDB',
+            type = 'gdb',
+            request = 'attach',
+            cwd = '${workspaceFolder}',
+            program = function()
+              return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+            end,
+            pid = function()
+              return vim.fn.input('PID to attach to: ', '', 'number')
+            end,
+            MIMode = 'gdb',
+            setupCommands = {
+              {
+                text = '-enable-pretty-printing',
+                description = 'Enable pretty printing of gdb objects',
+                ignoreFailures = true,
+              },
+            },
+          },
+        },
+        -- Add configurations for other languages here if needed
       },
     }
 
-    -- Dap UI setup
-    -- For more information, see |:help nvim-dap-ui|
+    -- Register the GDB adapter
+    dap.adapters.gdb = {
+      type = 'executable',
+      command = 'gdb', -- Path to the GDB executable
+      args = { '--interpreter=mi' }, -- Important for DAP communication
+    }
+
+    -- Existing adapter configurations (keep these)
+    dap.adapters.executable = { -- This might be for codelldb, keep if you use it
+      type = 'executable',
+      command = vim.fn.stdpath 'data' .. '/mason/bin/codelldb',
+      name = 'lldb1',
+      host = '127.0.0.1',
+      port = 13000,
+    }
+
+    dap.adapters.codelldb = { -- Keep this if you use codelldb
+      name = 'codelldb server',
+      type = 'server',
+      port = '${port}',
+      executable = {
+        command = vim.fn.stdpath 'data' .. '/mason/bin/codelldb',
+        args = { '--port', '${port}' },
+      },
+    }
+
+    -- You might not need this if you're explicitly configuring GDB
+    -- require('dap-lldb').setup(cfg)
+
+    require('mason-nvim-dap').setup {
+      automatic_installation = true,
+      handlers = {},
+      ensure_installed = {
+        'delve',
+        -- Add 'gdb' here if mason should try to install a GDB adapter (might not be necessary)
+      },
+    }
+
+    -- Dap UI setup (keep this)
     dapui.setup {
-      -- Set icons to characters that are more likely to work in every terminal.
-      --    Feel free to remove or use ones that you like more! :)
-      --    Don't feel like these are good choices.
       icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
       controls = {
         icons = {
@@ -120,27 +183,25 @@ return {
       },
     }
 
-    -- Change breakpoint icons
-    -- vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
-    -- vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
-    -- local breakpoint_icons = vim.g.have_nerd_font
-    --     and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-    --   or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
-    -- for type, icon in pairs(breakpoint_icons) do
-    --   local tp = 'Dap' .. type
-    --   local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
-    --   vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
-    -- end
+    -- Breakpoint icons (keep this)
+    vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
+    vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
+    local breakpoint_icons = vim.g.have_nerd_font
+        and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
+      or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
+    for type, icon in pairs(breakpoint_icons) do
+      local tp = 'Dap' .. type
+      local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
+      vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
+    end
 
     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
-    -- Install golang specific config
+    -- Golang specific config (keep this if you debug Go)
     require('dap-go').setup {
       delve = {
-        -- On Windows delve must be run attached or it crashes.
-        -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
         detached = vim.fn.has 'win32' == 0,
       },
     }
