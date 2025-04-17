@@ -69,9 +69,8 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -163,11 +162,6 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --
---  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -746,6 +740,9 @@ require('lazy').setup({
         marksman = {},
         -- Godot
         gdtoolkit = {},
+        --Svelth
+        stylelint = {},
+        svelte = {},
 
         -- pyright = {},
         -- rust_analyzer = {},
@@ -1028,9 +1025,21 @@ require('lazy').setup({
     config = function()
       ---@diagnostic disable-next-line: missing-fields
       require('tokyonight').setup {
+        transparent = true,
+
         styles = {
-          comments = { italic = false }, -- Disable italics in comments
+          sidebars = 'transparent',
+          floats = 'transparent',
+          border = '#ff00000',
+          text = '#000000',
         },
+
+        on_highlights = function(hl)
+          hl.comment = { bg = '#444444', fg = '#cccccc' }
+          hl.perlComment = { bg = '#444444', fg = '#cccccc' }
+          hl.Comment = { bg = '#444444', fg = '#cccccc' }
+          hl.IlluminatedWordText = { bg = '#ffffff', fg = '#ffffff' }
+        end,
       }
 
       -- Load the colorscheme here.

@@ -20,7 +20,7 @@ return {
         width = 25,
         mappings = {
           ['\\'] = 'close_window',
-          ['o'] = 'open',
+          ['<leader>o'] = 'open',
         },
       },
     },

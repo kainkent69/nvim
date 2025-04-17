@@ -16,6 +16,25 @@ M.setup = function()
       map(mode, '<C-a>', '<Esc>ggGVgg$', { desc = 'select all' })
     end,
   })
+
+  map('n', '<C-/>', 'gcc', {
+    desc = 'Comment Toggle',
+  })
+
+  map('v', '<C-/>', 'gc', {
+    desc = 'Comment Toggle',
+  })
+
+  map('i', '<C-/>', '<Esc>gcci', {
+    desc = 'Comment Toggle',
+  })
+
+  -- navigating the content
+  map('i', '<C-k>', '<up>', { desc = 'Move Upward' })
+  map('i', '<C-j>', '<down>', { desc = 'Move Downward' })
+  -- move the content back
+  map('i', '<C-L>', '<right>', { desc = 'Move Forward' })
+  map('i', '<C-H>', '<left>', { desc = 'Move Backward' })
   -- users options
   require('custom.plugins.userOptions').setup()
   -- for godot
