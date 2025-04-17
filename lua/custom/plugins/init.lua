@@ -4,19 +4,6 @@ M.setup = function()
   -- moving one line --
   -- local
   local map = vim.api.nvim_set_keymap
-  local vimmap = vim.keymap
-
-  vimmap.set('n', '<leader>g1', function()
-    vim.api.nvim_feedkeys(':tabn 1', 'n', false)
-  end, { desc = 'goto tab 1' })
-
-  vimmap.set('n', '<leader>g2', function()
-    vim.api.nvim_feedkeys(':tabn 2', 'n', false)
-  end, { desc = 'goto tab 2' })
-
-  vimmap.set('n', '<leader>g3', function()
-    vim.api.nvim_feedkeys(':tabn 2', 'n', false)
-  end, { desc = 'goto tab 3' })
 
   -- cursor and other things
   helpers.getModes('nivx', {
@@ -30,8 +17,32 @@ M.setup = function()
     end,
   })
 
-  -- users options
+  map('n', '<C-/>', 'gcc', {
+    desc = 'Comment Toggle',
+  })
 
+  map('v', '<C-/>', 'gc', {
+    desc = 'Comment Toggle',
+  })
+
+  map('i', '<C-/>', '<Esc>gcci', {
+    desc = 'Comment Toggle',
+  })
+
+  -- navigating the content
+  map('i', '<C-k>', '<up>', { desc = 'Move Upward' })
+  map('i', '<C-j>', '<down>', { desc = 'Move Downward' })
+  -- move the content back
+  map('i', '<C-L>', '<right>', { desc = 'Move Forward' })
+  map('i', '<C-H>', '<left>', { desc = 'Move Backward' })
+  -- users options
   require('custom.plugins.userOptions').setup()
+  -- for godot
+  local set = false
+  local projectFile = vim.fn.getcwd() .. 'project-godot'
+  if projectFile and set then
+    vim.fn.serverstart './godohost'
+  end
 end
+
 return M

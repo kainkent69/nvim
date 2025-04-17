@@ -69,9 +69,8 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -163,11 +162,6 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --
---  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -208,6 +202,11 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
 
+  -- godot setup
+  {
+    'habamax/vim-godot',
+    event = 'VimEnter',
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -242,7 +241,7 @@ require('lazy').setup({
         change = { text = '~' },
         delete = { text = '_' },
         topdelete = { text = '‾' },
-        changedelete = { text = '~' },
+        changedelete = { text = '~-' },
       },
     },
   },
@@ -447,6 +446,77 @@ require('lazy').setup({
       },
     },
   },
+
+  -- Harpoon
+
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
+    config = function()
+      require('harpoon'):setup() -- Basic Harpoon setup:
+      -- Optional keymaps and configurations can go here.
+
+      local harpoon = require 'harpoon'
+      harpoon:setup {}
+      -- basic configuration
+      vim.keymap.set('n', '<C-q>', function()
+        harpoon:list():add()
+      end, { desc = 'Add to the list harpoon' })
+
+      vim.keymap.set('n', '<leader>hh', function()
+        harpoon:list():remove_at(#harpoon:list() - 1)
+      end, { desc = 'Delete to harpoon' })
+
+      vim.keymap.set('n', '<C-e>', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end)
+
+      vim.keymap.set('n', '<C-h>', function()
+        harpoon:list():select(1)
+      end)
+      vim.keymap.set('n', '<C-t>', function()
+        harpoon:list():select(2)
+      end)
+      vim.keymap.set('n', '<C-n>', function()
+        harpoon:list():select(3)
+      end)
+      vim.keymap.set('n', '<C-s>', function()
+        harpoon:list():select(4)
+      end)
+
+      -- Toggle previous & next buffers stored within Harpoon list
+      vim.keymap.set('n', '<C-S-P>', function()
+        harpoon:list():prev()
+      end)
+      vim.keymap.set('n', '<C-S-N>', function()
+        harpoon:list():next()
+      end) -- basic telescope configuration
+
+      local conf = require('telescope.config').values
+      local function toggle_telescope(harpoon_files)
+        local file_paths = {}
+        for _, item in ipairs(harpoon_files.items) do
+          table.insert(file_paths, item.value)
+        end
+
+        require('telescope.pickers')
+          .new({}, {
+            prompt_title = 'Harpoon',
+            finder = require('telescope.finders').new_table {
+              results = file_paths,
+            },
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end
+
+      vim.keymap.set('n', '<C-e>', function()
+        toggle_telescope(harpoon:list())
+      end, { desc = 'Open harpoon window' })
+    end,
+  },
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -543,6 +613,16 @@ require('lazy').setup({
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+          --[[
+          -- Lspconfig custom
+          --]]
+          -- this is for showing the buffer to hover difination
+          map('K', vim.lsp.buf.hover, 'Hover lsp config')
+          -- for the difination
+          map('Td', vim.lsp.buf.definition, 'Goto defination')
+          map('TD', vim.lsp.buf.declaration, 'Goto defination')
+          -- for the type
+          map('Tt', vim.lsp.buf.type_definition, 'Goto definition')
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
@@ -645,10 +725,25 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {},
-        gopls = {},
+        gopls = {
+          setup = function()
+            -- You can add more FileType autocommands for other filetypes
+          end,
+        },
+        goimports = {},
         neocmake = {
           filetypes = { 'cmake', 'CMakeLists.txt' },
         },
+        -- debugging C/C++
+        codelldb = {},
+        -- Markdown
+        marksman = {},
+        -- Godot
+        gdtoolkit = {},
+        --Svelth
+        stylelint = {},
+        svelte = {},
+
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -677,33 +772,32 @@ require('lazy').setup({
       }
 
       vim.api.nvim_create_user_command('Emmet', function()
-        servers.emmet_language_server = {
-          filetypes = { 'css', 'eruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'pug', 'typescriptreact' },
-          -- Read more about this options in the [vscode docs](https://code.visualstudio.com/docs/editor/emmet#_emmet-configuration).
-          -- **Note:** only the options listed in the table are supported.
-          init_options = {
-            ---@type table<string, string>
-            includeLanguages = {},
-            --- @type string[]
-            excludeLanguages = {},
-            --- @type string[]
-            extensionsPath = {},
-            --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/preferences/)
-            preferences = {},
-            --- @type boolean Defaults to `true`
-            showAbbreviationSuggestions = true,
-            --- @type "always" | "never" Defaults to `"always"`
-            showExpandedAbbreviation = 'always',
-            --- @type boolean Defaults to `false`
-            showSuggestionsAsSnippets = false,
-            --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/syntax-profiles/)
-            syntaxProfiles = {},
-            --- @type table<string, string> [Emmet Docs](https://docs.emmet.io/customization/snippets/#variables)
-            variables = {},
-          },
-        }
-
-        require('lspconfig').emmet_language_server.setup(servers.emmet_language_server)
+        servers.emmet_language_server =
+          {
+            filetypes = { 'css', 'ruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'pug', 'typescriptreact' },
+            -- Read more about this options in the [vscode docs](https://code.visualstudio.com/docs/editor/emmet#_emmet-configuration).
+            -- **Note:** only the options listed in the table are supported.
+            init_options = {
+              ---@type table<string, string>
+              includeLanguages = {},
+              --- @type string[]
+              excludeLanguages = {},
+              --- @type string[]
+              extensionsPath = {},
+              --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/preferences/)
+              preferences = {},
+              --- @type boolean Defaults to `true`
+              showAbbreviationSuggestions = true,
+              --- @type "always" | "never" Defaults to `"always"`
+              showExpandedAbbreviation = 'always',
+              --- @type boolean Defaults to `false`
+              showSuggestionsAsSnippets = false,
+              --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/syntax-profiles/)
+              syntaxProfiles = {},
+              --- @type table<string, string> [Emmet Docs](https://docs.emmet.io/customization/snippets/#variables)
+              variables = {},
+            },
+          }, require('lspconfig').emmet_language_server.setup(servers.emmet_language_server)
       end, { desc = 'Enable Emmit' })
 
       -- Ensure the servers and tools above are installed
@@ -748,6 +842,7 @@ require('lazy').setup({
       vim.keymap.set({ 'n', 'v' }, '<leader>xe', require('nvim-emmet').wrap_with_abbreviation)
     end,
   },
+
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -891,7 +986,7 @@ require('lazy').setup({
           --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-          ['<C-l>'] = cmp.mapping(function()
+          ['<c-l>'] = cmp.mapping(function()
             if luasnip.expand_or_locally_jumpable() then
               luasnip.expand_or_jump()
             end
@@ -930,9 +1025,21 @@ require('lazy').setup({
     config = function()
       ---@diagnostic disable-next-line: missing-fields
       require('tokyonight').setup {
+        transparent = true,
+
         styles = {
-          comments = { italic = false }, -- Disable italics in comments
+          sidebars = 'transparent',
+          floats = 'transparent',
+          border = '#ff00000',
+          text = '#000000',
         },
+
+        on_highlights = function(hl)
+          hl.comment = { bg = '#444444', fg = '#cccccc' }
+          hl.perlComment = { bg = '#444444', fg = '#cccccc' }
+          hl.Comment = { bg = '#444444', fg = '#cccccc' }
+          hl.IlluminatedWordText = { bg = '#ffffff', fg = '#ffffff' }
+        end,
       }
 
       -- Load the colorscheme here.
@@ -988,7 +1095,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'go', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -998,7 +1105,7 @@ require('lazy').setup({
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = { enable = false, disable = { 'ruby' } },
     },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -1024,6 +1131,7 @@ require('lazy').setup({
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
   require('custom.plugins.init').setup(),
+
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
@@ -1036,7 +1144,6 @@ require('lazy').setup({
   -- you can continue same window with `<space>sr` which resumes last telescope search
 }, {
   ui = {
-    -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',
