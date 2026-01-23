@@ -752,8 +752,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+        ts_ls = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -772,8 +771,7 @@ require('lazy').setup({
       }
 
       vim.api.nvim_create_user_command('Emmet', function()
-        servers.emmet_language_server =
-          {
+        servers.emmet_language_server = {
             filetypes = { 'css', 'ruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'pug', 'typescriptreact' },
             -- Read more about this options in the [vscode docs](https://code.visualstudio.com/docs/editor/emmet#_emmet-configuration).
             -- **Note:** only the options listed in the table are supported.
@@ -906,6 +904,7 @@ require('lazy').setup({
         end)(),
 
         dependencies = { 'rafamadriz/friendly-snippets' },
+
         config = function()
           local ls = require 'luasnip'
           local s = ls.snippet
@@ -914,6 +913,8 @@ require('lazy').setup({
           if not t then
             print 't is a nil'
           end
+
+          -- ts/js
           ls.add_snippets('all', { -- Or "typescript", "javascriptreact", etc.
             s('arrfunc', {
               t '(',
@@ -922,6 +923,9 @@ require('lazy').setup({
               i(2, 'body'),
             }),
           })
+
+          -- load luasnip
+          require('luasnip.loaders.from_vscode').lazy_load()
         end,
         lazy = false,
       },
@@ -1092,10 +1096,10 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    branch = 'master',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'go', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'go', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'svelte' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
