@@ -9,7 +9,6 @@ M.setup = function()
   helpers.getModes('nivx', {
     cb = function(mode)
       map(mode, 'jk', '<Esc>', { desc = 'Go To Normal Mode' })
-      map(mode, '<leader>mu', '<Esc>0VdkP', { desc = 'move cursor up' })
       map(mode, '<leader>mb', '<Esc>0Vd<Esc>jP', { desc = 'move cursor down' })
       map(mode, '<C-v>', '<Esc>p<Esc>i', { desc = 'Paste' })
       map(mode, '<C-c>', '<Esc>y<Esc> i', { desc = 'copy' })
@@ -25,7 +24,7 @@ M.setup = function()
     desc = 'Comment Toggle',
   })
 
-  map('i', '<C-/>', '<Esc>gcci', {
+  map('i', '<Esc>v<C-/>i', '<Esc>gcci', {
     desc = 'Comment Toggle',
   })
 
@@ -33,8 +32,9 @@ M.setup = function()
   map('i', '<C-k>', '<up>', { desc = 'Move Upward' })
   map('i', '<C-j>', '<down>', { desc = 'Move Downward' })
   -- move the content back
-  map('i', '<C-L>', '<right>', { desc = 'Move Forward' })
-  map('i', '<C-H>', '<left>', { desc = 'Move Backward' })
+  map('i', '<C-l>', '<Esc>li', { desc = 'Move Forward' })
+  map('i', '<C-h>', '<Esc>hi', { desc = 'Move Backward' })
+
   -- users options
   require('custom.plugins.userOptions').setup()
   -- for godot

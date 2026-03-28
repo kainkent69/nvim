@@ -531,7 +531,7 @@ require('lazy').setup({
       -- Useful status updates for LSP.
       { 'j-hui/fidget.nvim', opts = {} },
 
-      -- Allows extra capabilities provided by nvim-cmp
+      -- Allows extra capabilities provided by nvim-cmpinit
       'hrsh7th/cmp-nvim-lsp',
     },
     config = function()
@@ -743,6 +743,7 @@ require('lazy').setup({
         --Svelth
         stylelint = {},
         svelte = {},
+        tailwindcss = {},
 
         -- pyright = {},
         -- rust_analyzer = {},
@@ -753,7 +754,31 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
-
+        emmet_language_server = {
+          filetypes = { 'css', 'ruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'pug', 'typescriptreact', 'svelte' },
+          -- Read more about this options in the [vscode docs](https://code.visualstudio.com/docs/editor/emmet#_emmet-configuration).
+          -- **Note:** only the options listed in the table are supported.
+          init_options = {
+            ---@type table<string, string>
+            includeLanguages = {},
+            --- @type string[]
+            excludeLanguages = {},
+            --- @type string[]
+            extensionsPath = {},
+            --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/preferences/)
+            preferences = {},
+            --- @type boolean Defaults to `true`
+            showAbbreviationSuggestions = true,
+            --- @type "always" | "never" Defaults to `"always"`
+            showExpandedAbbreviation = 'always',
+            --- @type boolean Defaults to `false`
+            showSuggestionsAsSnippets = false,
+            --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/syntax-profiles/)
+            syntaxProfiles = {},
+            --- @type table<string, string> [Emmet Docs](https://docs.emmet.io/customization/snippets/#variables)
+            variables = {},
+          },
+        },
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -769,34 +794,6 @@ require('lazy').setup({
           },
         },
       }
-
-      vim.api.nvim_create_user_command('Emmet', function()
-        servers.emmet_language_server = {
-            filetypes = { 'css', 'ruby', 'html', 'javascript', 'javascriptreact', 'less', 'sass', 'scss', 'pug', 'typescriptreact' },
-            -- Read more about this options in the [vscode docs](https://code.visualstudio.com/docs/editor/emmet#_emmet-configuration).
-            -- **Note:** only the options listed in the table are supported.
-            init_options = {
-              ---@type table<string, string>
-              includeLanguages = {},
-              --- @type string[]
-              excludeLanguages = {},
-              --- @type string[]
-              extensionsPath = {},
-              --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/preferences/)
-              preferences = {},
-              --- @type boolean Defaults to `true`
-              showAbbreviationSuggestions = true,
-              --- @type "always" | "never" Defaults to `"always"`
-              showExpandedAbbreviation = 'always',
-              --- @type boolean Defaults to `false`
-              showSuggestionsAsSnippets = false,
-              --- @type table<string, any> [Emmet Docs](https://docs.emmet.io/customization/syntax-profiles/)
-              syntaxProfiles = {},
-              --- @type table<string, string> [Emmet Docs](https://docs.emmet.io/customization/snippets/#variables)
-              variables = {},
-            },
-          }, require('lspconfig').emmet_language_server.setup(servers.emmet_language_server)
-      end, { desc = 'Enable Emmit' })
 
       -- Ensure the servers and tools above are installed
       --
@@ -1019,6 +1016,87 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 2000,
+    config = function()
+      require('catppuccin').setup {
+        flavour = 'auto', -- latte, frappe, macchiato, mocha
+        background = { -- :h background
+          light = 'latte',
+          dark = 'mocha',
+        },
+        transparent_background = false, -- disables setting the background color.
+        float = {
+          transparent = false, -- enable transparent floating windows
+          solid = false, -- use solid styling for floating windows, see |winborder|
+        },
+        show_end_of_buffer = false, -- shows the '~' characters after the end of buffers
+        term_colors = false, -- sets terminal colors (e.g. `g:terminal_color_0`)
+        dim_inactive = {
+          enabled = false, -- dims the background color of inactive window
+          shade = 'dark',
+          percentage = 0.15, -- percentage of the shade to apply to the inactive window
+        },
+        no_italic = false, -- Force no italic
+        no_bold = false, -- Force no bold
+        no_underline = false, -- Force no underline
+        styles = { -- Handles the styles of general hi groups (see `:h highlight-args`):
+          comments = { 'italic' }, -- Change the style of comments
+          conditionals = { 'italic' },
+          loops = {},
+          functions = {},
+          keywords = {},
+          strings = {},
+          variables = {},
+          numbers = {},
+          booleans = {},
+          properties = {},
+          types = {},
+          operators = {},
+          -- miscs = {}, -- Uncomment to turn off hard-coded styles
+        },
+        lsp_styles = { -- Handles the style of specific lsp hl groups (see `:h lsp-highlight`).
+          virtual_text = {
+            errors = { 'italic' },
+            hints = { 'italic' },
+            warnings = { 'italic' },
+            information = { 'italic' },
+            ok = { 'italic' },
+          },
+          underlines = {
+            errors = { 'underline' },
+            hints = { 'underline' },
+            warnings = { 'underline' },
+            information = { 'underline' },
+            ok = { 'underline' },
+          },
+          inlay_hints = {
+            background = true,
+          },
+        },
+        color_overrides = {},
+        custom_highlights = {},
+        default_integrations = true,
+        auto_integrations = false,
+        integrations = {
+          cmp = true,
+          gitsigns = true,
+          nvimtree = true,
+          notify = false,
+          mini = {
+            enabled = true,
+            indentscope_color = '',
+          },
+          -- For more plugins integrations please scroll down (https://github.com/catppuccin/nvim#integrations)
+        },
+      }
+
+      -- setup must be called before loading
+      vim.cmd.colorscheme 'catppuccin'
+    end,
+  },
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -1096,21 +1174,28 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    branch = 'master',
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'go', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'svelte' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = false, disable = { 'ruby' } },
-    },
+    branch = 'main',
+    lazy = false,
+
+    config = function()
+      require('nvim-treesitter').install { 'javascript', 'css', 'typescript', 'html', 'svelte' }
+
+      -- highligtining
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = { '<filetype>' },
+        callback = function()
+          vim.treesitter.start()
+        end,
+      })
+
+      -- folds
+      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      vim.wo[0][0].foldmethod = 'expr'
+
+      -- indentation
+      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    end,
+
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --

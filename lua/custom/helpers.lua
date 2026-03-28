@@ -9,6 +9,5 @@ local M = {
     end
   end,
 }
--- parse strings into modes
 
 return M
