@@ -724,6 +724,15 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
+        dockerls = {
+          filetypes = { 'dockerfile' },
+        },
+        -- gitlab
+        gitlab_ci_ls = {},
+        docker_compose_language_service = {},
+        ansiblels = {
+          filetypes = { 'yaml', 'yml', 'ansible', 'nginx' },
+        },
         clangd = {},
         gopls = {
           setup = function()
@@ -744,6 +753,7 @@ require('lazy').setup({
         stylelint = {},
         svelte = {},
         tailwindcss = {},
+        buf_ls = {},
 
         -- pyright = {},
         -- rust_analyzer = {},
@@ -842,6 +852,7 @@ require('lazy').setup({
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
+    nginx = { 'nginx-config-formatter' },
     keys = {
       {
         '<leader>f',
@@ -1178,22 +1189,27 @@ require('lazy').setup({
     lazy = false,
 
     config = function()
-      require('nvim-treesitter').install { 'javascript', 'css', 'typescript', 'html', 'svelte' }
+      -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+      -- This is the new API for nvim-treesitter (main branch, Neovim 0.11+)
+      -- NOTE: If highlighting fails, manually link queries (common on Nvim 0.11 nightly):
+      -- mkdir -p ~/.local/share/nvim/site/queries
+      -- ln -s ~/.local/share/nvim/lazy/nvim-treesitter/runtime/queries/svelte ~/.local/share/nvim/site/queries/svelte
+      -- (Repeat for javascript, typescript, css, html, lua)
+      require('nvim-treesitter').install { 'javascript', 'css', 'typescript', 'html', 'svelte', 'lua', 'vim', 'vimdoc', 'query' }
 
-      -- highligtining
       vim.api.nvim_create_autocmd('FileType', {
-        pattern = { '<filetype>' },
         callback = function()
-          vim.treesitter.start()
+          -- Enable treesitter highlighting for all filetypes that have a parser
+          if pcall(vim.treesitter.start) then
+            -- Optional: Enable treesitter-based folding
+            vim.wo.foldmethod = 'expr'
+            vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+
+            -- Optional: Enable treesitter-based indentation
+            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
         end,
       })
-
-      -- folds
-      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-      vim.wo[0][0].foldmethod = 'expr'
-
-      -- indentation
-      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end,
 
     -- There are additional nvim-treesitter modules that you can use to interact
